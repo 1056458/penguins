@@ -1,0 +1,119 @@
+---
+title: "penguins.assignment"
+author: "1056458"
+date: "2022-12-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Setting working directory and loading libraries, functions and data
+
+```{r}
+# Set working directory
+setwd("/penguin_assessment") #(Insert own working directory here)
+
+# Load libraries/package
+source("functions/libraries.r")
+
+# Load functions 
+source("functions/cleaning.r")
+source("functions/plotting.r")
+
+# Load data
+penguins_raw <- read.csv("/data_raw/penguins_raw.csv") 
+
+```
+
+## Cleaning data
+For this, I will use two different cleaning functions.
+
+```{r}
+# Use cleaning function on raw data
+## Removes column "Comments" and columns beginning with "Delta"
+## Removes observations with missing values 
+penguin_clean <- cleaning(penguins_raw)
+
+# Save clean data in new folder
+write.csv(penguin_clean, "data_clean/penguin_clean.csv")
+
+# Use function to remove NAs from dataset 
+penguin_cleaner <- remove_na(penguin_clean)
+
+# Save "cleaner" data in a new folder 
+write.csv(penguin_cleaner, "data_clean/penguin_cleaner.csv")
+```
+
+## Carry out a statistical test
+I will test whether body mass variation in penguins can be explained by flipper length variation.
+To do this, I will create a linear regression model of these two variables. 
+
+### Create a linear regression model 
+
+```{r}
+# Plot scatter plot of data to see raw data
+ggplot(penguin_cleaner, 
+       aes(x = flipper_length_mm,
+           y = body_mass_g)) +
+  geom_point()
+
+# Create linear regression model
+penguin_mod <- lm(body_mass_g ~ flipper_length_mm, penguin_cleaner)
+
+# Summary of linear regression model
+summary(penguin_mod)
+```
+
+The raw data (scatter plot) shows an apparent positive correlation between flipper length and body mass.
+The linear regression model summary shows that 76.1% (R squared = 0.7614) of the variation in body mass can be explained by flipper length. 
+
+### Visualisation of linear regression model
+
+```{r}
+# Plot linear regression on scatter plot 
+ggplot(penguin_cleaner, aes(x = flipper_length_mm, y = body_mass_g)) +
+geom_point() +
+geom_smooth(method = "lm")
+
+# Use function to plot the linear regression (with improved aesthetics)
+mass_length_lm <- plot_regression(penguin_cleaner)
+
+# Look at figure
+mass_length_lm
+```
+This linear regression model visualisation shows that there is a positive association between body mass and flipper length. Although, it is worth noting that the relationship between these two variables may differ according to the penguin species (as seen in different colours above); that is, there may be an interactive effect. In this figure, the Gentoo penguin may be driving the positive association that we see and the data points appear to be very positively associated. In order to test the impact of different species on this relationship, it would be necessary to carry out further statistical test. 
+
+
+## Save figures using function 
+I will save the figure using two functions (one for .png documents and one for .svg documents). 
+I will save the four types of plots, each are appropriate for different uses. 
+
+```{r}
+# Save figure suitable for a report
+save_lm_plot_png(penguin_cleaner, 
+                      "figures/fig01_report.png", 
+                      size = 15, res = 600, scaling = 1)
+
+# Save figure suitable for a presentation
+save_lm_plot_png(penguin_cleaner, 
+                      "figures/fig01_presentation.png", 
+                      size = 20, res = 600, scaling = 1.3)
+
+# Save figure suitable for a poster
+save_lm_plot_png(penguin_cleaner, 
+                      "figures/fig01_poster.png", 
+                      size = 30, res = 600, scaling = 2)
+
+# Save figure as a vector
+save_lm_plot_svg(penguin_cleaner, 
+                      "figures/fig01_vector.svg", 
+                      size = 15, scaling = 1)
+```
+
+
+
+
+
+
